@@ -1,6 +1,10 @@
-This repo with update new version of template support for geth 1.10
+This repo is updated with new version of template support for geth 1.10
 
-
+- Issue: 
+    - Miners node don't automatically connect to the bootnode
+        - how to fix: 
+                - using admin.addPeer("enode://...@cluster_ip_miner_or_bootnode:30303") 
+                - get cluster ip and put it to environment variable and update to gethconfig.toml
 # Ethererum Proof of Authority Clique Kubernetes template
 Use this template to start Proof of Authority network on your kubernetes cluster or locally on minikube.
 
