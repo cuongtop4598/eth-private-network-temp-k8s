@@ -1,4 +1,4 @@
-![BlockchainIT](logo.jpg)
+This repo with update new version of template support for geth 1.10
 
 
 # Ethererum Proof of Authority Clique Kubernetes template
