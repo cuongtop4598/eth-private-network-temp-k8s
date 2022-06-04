@@ -12,8 +12,7 @@ spec:
   selector:
     app: miner
     tier: backend
-  type: LoadBalancer
-  externalTrafficPolicy: Cluster
+  type: ClusterIP
   ports:
     - name: miner-jsonrpc
       protocol: TCP

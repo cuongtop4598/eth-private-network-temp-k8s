@@ -8,8 +8,6 @@ def set_node_template_vars(values)
   @Node_WSPort           = values["geth"]["Node_WSPort"]
   @NodeP2P_ListenAddr    = values["geth"]["NodeP2P_ListenAddr"]
   @NodeP2P_DiscoveryAddr = values["geth"]["NodeP2P_DiscoveryAddr"]
-  @Dashboard_Port        = values["geth"]["Dashboard_Port"]
-  @Dashboard_Refresh     = values["geth"]["Dashboard_Refresh"]
   @replicas              = values["k8s"]["replicas"]
   @External_RPC_IP       = values["k8s"]["External_RPC_IP"]
   @Nodekeyhex            = values["k8s"]["nodekeyhex"]
@@ -67,15 +65,14 @@ spec:
     app: bootnode
     tier: backend
     name: bootnode
-  type: LoadBalancer
-  externalTrafficPolicy: Cluster
+  type: ClusterIP
   ports:
     - name: geth-bootnode-ipc-discovery
       protocol: UDP
       port: <%= @NodeP2P_DiscoveryAddr %>
       targetPort: <%= @NodeP2P_DiscoveryAddr %>
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   namespace: default
@@ -84,6 +81,9 @@ metadata:
     app: bootnode
     name: bootnode-setup-pod
 spec:
+  selector:
+    matchLabels:
+      app: bootnode
   template:
     metadata:
       labels:
@@ -92,7 +92,7 @@ spec:
     spec:
       containers:
       - name: geth-boot-node-setup-container
-        image: ijsfd/geth-node:alltools-v1.9.0
+        image: ethereum/client-go:alltools-latest
         imagePullPolicy: IfNotPresent
         command: [ "sh" ]
         args:
@@ -100,7 +100,7 @@ spec:
         - "cd <%= @Node_DataDir %>;
            echo \"<%= @Nodekeyhex %>\" > nodekeyhex;
            cat nodekeyhex;
-           echo \"enode://$(/usr/local/bin/bootnode -nodekey nodekeyhex -writeaddress)@$GETH_BOOTNODE_SVC_SERVICE_HOST:<%= @NodeP2P_DiscoveryAddr %>\" > enode.address;
+           echo \"enode://$(/usr/local/bin/bootnode -nodekey nodekeyhex -writeaddress)@$GETH_BOOTNODE_SVC_SERVICE_HOST:0?discport=<%= @NodeP2P_DiscoveryAddr %>\" > enode.address;
            set +x;
            while true; do :; done;"
         volumeMounts:
@@ -136,7 +136,7 @@ spec:
     spec:
       containers:
       - name: geth-bootnode-container
-        image: ijsfd/geth-node:alltools-v1.9.0
+        image: ethereum/client-go:alltools-latest
         imagePullPolicy: IfNotPresent
         command: [ "sh" ]
         args:
@@ -151,7 +151,7 @@ spec:
           --verbosity <%= @config["geth"]["network"]["verbosity"] %>  \
           --nodekey <%= @Node_DataDir %>/nodekeyhex \
 <%- if @Eth_Etherbase && @Eth_Password -%>
-          --unlock <%= @Eth_Etherbase %> --allow-insecure-unlock --password <%= @Node_DataDir %>/password.txt --gasprice '<%= @config['geth']['network']['gasPrice'] %>' --targetgaslimit '<%= @config['geth']['network']['gasLimit'] %>' \
+          --unlock <%= @Eth_Etherbase %> --allow-insecure-unlock --password <%= @Node_DataDir %>/password.txt --mine --miner.gasprice '<%= @config['geth']['network']['gasPrice'] %>' --miner.gaslimit '<%= @config['geth']['network']['gasLimit'] %>' \
 <% end -%>
           --config /etc/geth/<%= @Node_UserIdent %>/gethconfig.toml;"
         volumeMounts:

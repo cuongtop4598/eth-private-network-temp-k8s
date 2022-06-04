@@ -8,8 +8,6 @@ def set_node_template_vars(values)
   @Node_WSPort           = values["geth"]["Node_WSPort"]
   @NodeP2P_ListenAddr    = values["geth"]["NodeP2P_ListenAddr"]
   @NodeP2P_DiscoveryAddr = values["geth"]["NodeP2P_DiscoveryAddr"]
-  @Dashboard_Port        = values["geth"]["Dashboard_Port"]
-  @Dashboard_Refresh     = values["geth"]["Dashboard_Refresh"]
   @replicas              = values["k8s"]["replicas"]
   return
 end
@@ -87,12 +85,6 @@ spec:
       port: <%= @NodeP2P_DiscoveryAddr %>
       targetPort: <%= @NodeP2P_DiscoveryAddr %>
 <% end -%>
-<%- if @Dashboard_Port -%>
-    - name: <%= @Node_UserIdent %>-dashboard
-      protocol: TCP
-      port: <%= @Dashboard_Port %>
-      targetPort: <%= @Dashboard_Port %>
-<% end -%>
 <% end -%>
 <%- @nodes.each do |node| -%>
 <%= set_node_template_vars(node.values.first) -%>
@@ -122,7 +114,7 @@ spec:
     spec:
       containers:
       - name: <%= @Node_UserIdent %>-container
-        image: ethereum/client-go:<%= @config["geth"]["version"] %>
+        image: ethereum/client-go:alltools-<%= @config["geth"]["version"] %>
         imagePullPolicy: Always
         command: [ "sh" ]
         args:
@@ -139,15 +131,13 @@ spec:
            sed -i \"s/BootstrapNodesV5 = \\[\\]/BootstrapNodesV5 = [\\\"$ENODE_ESC\\\"]/g\" /etc/geth/<%= @Node_UserIdent %>/gethconfig.toml;
 <% end -%>
            /usr/local/bin/geth \
-<%- if @Dashboard_Port || @Dashboard_Refresh -%>
-           --dashboard \
-<% end -%>
 <%- if @Eth_Etherbase && @Eth_Password -%>
            --mine \
 <% end -%>
+          --syncmode 'full' \
            --verbosity <%= @config["geth"]["network"]["verbosity"] %>  \
 <%- if @Eth_Etherbase && @Eth_Password -%>
-           --unlock <%= @Eth_Etherbase %> --allow-insecure-unlock --password <%= @Node_DataDir %>/password.txt --gasprice '<%= @config['geth']['network']['gasPrice'] %>' --targetgaslimit '<%= @config['geth']['network']['gasLimit'] %>'  \
+           --unlock <%= @Eth_Etherbase %> --allow-insecure-unlock --http --http.addr 0.0.0.0 --http.port <%= @Node_HTTPPort %> --http.corsdomain '*' --http.api personal,eth,net,web3 --password <%= @Node_DataDir %>/password.txt --miner.gasprice '<%= @config['geth']['network']['gasPrice'] %>' --miner.gaslimit '<%= @config['geth']['network']['gasLimit'] %>'  \
 <% end -%>
            --config /etc/geth/<%= @Node_UserIdent %>/gethconfig.toml;"
         ports:

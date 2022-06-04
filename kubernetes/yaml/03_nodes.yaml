@@ -106,7 +106,7 @@ metadata:
 data:
   gethconfig: |-
     [Eth]
-    NetworkId = 123456
+    NetworkId = 451998
     SyncMode = "full"
     LightPeers = 100
     DatabaseCache = 768
@@ -137,10 +137,6 @@ data:
     [Eth.GPO]
     Blocks = 20
     Percentile = 60
-    
-    [Shh]
-    MaxMessageSize = 1048576
-    MinimumAcceptedPOW = 2e-01
     
     [Node]
     UserIdent = "miner01"
@@ -165,11 +161,6 @@ data:
     TrustedNodes = []
     ListenAddr = ":30303"
     EnableMsgEvents = false
-    
-    [Dashboard]
-    Host = "0.0.0.0"
-    Port = 8080
-    Refresh = 3000000000
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -182,7 +173,7 @@ metadata:
 data:
   gethconfig: |-
     [Eth]
-    NetworkId = 123456
+    NetworkId = 451998
     SyncMode = "full"
     LightPeers = 100
     DatabaseCache = 768
@@ -213,10 +204,6 @@ data:
     [Eth.GPO]
     Blocks = 20
     Percentile = 60
-    
-    [Shh]
-    MaxMessageSize = 1048576
-    MinimumAcceptedPOW = 2e-01
     
     [Node]
     UserIdent = "miner02"
@@ -241,11 +228,6 @@ data:
     TrustedNodes = []
     ListenAddr = ":30303"
     EnableMsgEvents = false
-    
-    [Dashboard]
-    Host = "0.0.0.0"
-    Port = 8080
-    Refresh = 3000000000
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -258,7 +240,7 @@ metadata:
 data:
   gethconfig: |-
     [Eth]
-    NetworkId = 123456
+    NetworkId = 451998
     SyncMode = "full"
     LightPeers = 100
     DatabaseCache = 768
@@ -290,10 +272,6 @@ data:
     Blocks = 20
     Percentile = 60
     
-    [Shh]
-    MaxMessageSize = 1048576
-    MinimumAcceptedPOW = 2e-01
-    
     [Node]
     UserIdent = "miner03"
     DataDir = "/etc/testnet/miner03"
@@ -317,11 +295,6 @@ data:
     TrustedNodes = []
     ListenAddr = ":30303"
     EnableMsgEvents = false
-    
-    [Dashboard]
-    Host = "0.0.0.0"
-    Port = 8080
-    Refresh = 3000000000
 
 ---
 apiVersion: v1
@@ -351,10 +324,6 @@ spec:
       protocol: TCP
       port: 30303
       targetPort: 30303
-    - name: miner01-dashboard
-      protocol: TCP
-      port: 8080
-      targetPort: 8080
 ---
 apiVersion: v1
 kind: Service
@@ -383,10 +352,6 @@ spec:
       protocol: TCP
       port: 30303
       targetPort: 30303
-    - name: miner02-dashboard
-      protocol: TCP
-      port: 8080
-      targetPort: 8080
 ---
 apiVersion: v1
 kind: Service
@@ -415,10 +380,6 @@ spec:
       protocol: TCP
       port: 30303
       targetPort: 30303
-    - name: miner03-dashboard
-      protocol: TCP
-      port: 8080
-      targetPort: 8080
 ---
 apiVersion: apps/v1
 kind: StatefulSet
@@ -445,7 +406,7 @@ spec:
     spec:
       containers:
       - name: miner01-container
-        image: ethereum/client-go:v1.9.0
+        image: ethereum/client-go:alltools-latest
         imagePullPolicy: Always
         command: [ "sh" ]
         args:
@@ -460,10 +421,10 @@ spec:
            sed -i \"s/BootstrapNodes = \\[\\]/BootstrapNodes = [\\\"$ENODE_ESC\\\"]/g\" /etc/geth/miner01/gethconfig.toml;
            sed -i \"s/BootstrapNodesV5 = \\[\\]/BootstrapNodesV5 = [\\\"$ENODE_ESC\\\"]/g\" /etc/geth/miner01/gethconfig.toml;
            /usr/local/bin/geth \
-           --dashboard \
            --mine \
+          --syncmode 'full' \
            --verbosity 3  \
-           --unlock 0xc11ba4c7c24f70e7a581c7daa92eac108099acec --allow-insecure-unlock --password /etc/testnet/miner01/password.txt --gasprice '0x0' --targetgaslimit '9000000000000'  \
+           --unlock 0xc11ba4c7c24f70e7a581c7daa92eac108099acec --allow-insecure-unlock --http --http.addr 0.0.0.0 --http.port 8545 --http.corsdomain '*' --http.api personal,eth,net,web3 --password /etc/testnet/miner01/password.txt --miner.gasprice '0x0' --miner.gaslimit '9000000000000'  \
            --config /etc/geth/miner01/gethconfig.toml;"
         ports:
           - containerPort: 8545
@@ -535,7 +496,7 @@ spec:
     spec:
       containers:
       - name: miner02-container
-        image: ethereum/client-go:v1.9.0
+        image: ethereum/client-go:alltools-latest
         imagePullPolicy: Always
         command: [ "sh" ]
         args:
@@ -550,10 +511,10 @@ spec:
            sed -i \"s/BootstrapNodes = \\[\\]/BootstrapNodes = [\\\"$ENODE_ESC\\\"]/g\" /etc/geth/miner02/gethconfig.toml;
            sed -i \"s/BootstrapNodesV5 = \\[\\]/BootstrapNodesV5 = [\\\"$ENODE_ESC\\\"]/g\" /etc/geth/miner02/gethconfig.toml;
            /usr/local/bin/geth \
-           --dashboard \
            --mine \
+          --syncmode 'full' \
            --verbosity 3  \
-           --unlock 0x4c92786b90d848eaa3f4ef46918af724a309ae79 --allow-insecure-unlock --password /etc/testnet/miner02/password.txt --gasprice '0x0' --targetgaslimit '9000000000000'  \
+           --unlock 0x4c92786b90d848eaa3f4ef46918af724a309ae79 --allow-insecure-unlock --http --http.addr 0.0.0.0 --http.port 8545 --http.corsdomain '*' --http.api personal,eth,net,web3 --password /etc/testnet/miner02/password.txt --miner.gasprice '0x0' --miner.gaslimit '9000000000000'  \
            --config /etc/geth/miner02/gethconfig.toml;"
         ports:
           - containerPort: 8545
@@ -625,7 +586,7 @@ spec:
     spec:
       containers:
       - name: miner03-container
-        image: ethereum/client-go:v1.9.0
+        image: ethereum/client-go:alltools-latest
         imagePullPolicy: Always
         command: [ "sh" ]
         args:
@@ -640,10 +601,10 @@ spec:
            sed -i \"s/BootstrapNodes = \\[\\]/BootstrapNodes = [\\\"$ENODE_ESC\\\"]/g\" /etc/geth/miner03/gethconfig.toml;
            sed -i \"s/BootstrapNodesV5 = \\[\\]/BootstrapNodesV5 = [\\\"$ENODE_ESC\\\"]/g\" /etc/geth/miner03/gethconfig.toml;
            /usr/local/bin/geth \
-           --dashboard \
            --mine \
+          --syncmode 'full' \
            --verbosity 3  \
-           --unlock 0x4e7afbdc9413eeb582b3f1be49d652fa714484da --allow-insecure-unlock --password /etc/testnet/miner03/password.txt --gasprice '0x0' --targetgaslimit '9000000000000'  \
+           --unlock 0x4e7afbdc9413eeb582b3f1be49d652fa714484da --allow-insecure-unlock --http --http.addr 0.0.0.0 --http.port 8545 --http.corsdomain '*' --http.api personal,eth,net,web3 --password /etc/testnet/miner03/password.txt --miner.gasprice '0x0' --miner.gaslimit '9000000000000'  \
            --config /etc/geth/miner03/gethconfig.toml;"
         ports:
           - containerPort: 8545

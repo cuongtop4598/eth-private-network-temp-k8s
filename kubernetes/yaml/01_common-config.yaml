@@ -11,7 +11,7 @@ data:
   genesis-geth.json: |-
     {
       "config": {
-        "chainId": 123456,
+        "chainId": 451998,
         "homesteadBlock": 1,
         "eip150Block": 2,
         "eip150Hash": "0x0000000000000000000000000000000000000000000000000000000000000000",
@@ -19,7 +19,7 @@ data:
         "eip158Block": 3,
         "byzantiumBlock": 4,
         "clique": {
-          "period": 15,
+          "period": 5,
           "epoch": 30000
         }
       },
@@ -54,13 +54,16 @@ spec:
     tier: backend
     name: mongodb-deployment
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: mongodb
   namespace: default
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+      app: kuberneteth
   template:
     metadata:
       name: mongodb-deployment
