@@ -307,6 +307,7 @@ metadata:
     tier: backend
     name: miner01-svc
 spec:
+  type: NodePort
   selector:
     app: miner
     tier: backend
@@ -335,6 +336,7 @@ metadata:
     tier: backend
     name: miner02-svc
 spec:
+  type: NodePort
   selector:
     app: miner
     tier: backend
@@ -363,6 +365,7 @@ metadata:
     tier: backend
     name: miner03-svc
 spec:
+  type: NodePort
   selector:
     app: miner
     tier: backend

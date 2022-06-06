@@ -65,7 +65,7 @@ spec:
     app: bootnode
     tier: backend
     name: bootnode
-  type: ClusterIP
+  type: NodePort
   ports:
     - name: geth-bootnode-ipc-discovery
       protocol: UDP
@@ -100,7 +100,7 @@ spec:
         - "cd <%= @Node_DataDir %>;
            echo \"<%= @Nodekeyhex %>\" > nodekeyhex;
            cat nodekeyhex;
-           echo \"enode://$(/usr/local/bin/bootnode -nodekey nodekeyhex -writeaddress)@$GETH_BOOTNODE_SVC_SERVICE_HOST:0?discport=<%= @NodeP2P_DiscoveryAddr %>\" > enode.address;
+           echo \"enode://$(/usr/local/bin/bootnode -nodekey nodekeyhex -writeaddress)@$(hostname -i):<%= @NodeP2P_DiscoveryAddr %>\" > enode.address;
            set +x;
            while true; do :; done;"
         volumeMounts:

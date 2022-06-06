@@ -60,6 +60,7 @@ metadata:
     tier: backend
     name: <%= @Node_UserIdent %>-svc
 spec:
+  type: NodePort
   selector:
     app: miner
     tier: backend

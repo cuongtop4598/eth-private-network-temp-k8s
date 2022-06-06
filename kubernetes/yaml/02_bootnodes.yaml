@@ -114,7 +114,7 @@ spec:
     app: bootnode
     tier: backend
     name: bootnode
-  type: ClusterIP
+  type: NodePort
   ports:
     - name: geth-bootnode-ipc-discovery
       protocol: UDP
